@@ -1,5 +1,7 @@
 import validator from 'validator';
 
+import validationFormatter from './validationFormatter';
+
 export default (formDetails) => {
   if (Object.keys(formDetails).length === 0) {
     return { errorMessages: { error: 'Please provide data' } };
@@ -63,9 +65,5 @@ export default (formDetails) => {
       break;
   }
 
-  if (Object.keys(errorMessages).length === 0) {
-    return { isValid: true };
-  }
-
-  return { isValid: false, errorMessages };
+  return validationFormatter(errorMessages);
 };
