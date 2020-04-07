@@ -1,15 +1,20 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('Staffs', {
+    return queryInterface.createTable('Lecturers', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4
       },
-      role: {
-        type: Sequelize.STRING
+      userId: {
+        type: Sequelize.UUID,
+        references: {
+          model: 'Users',
+          key: 'id',
+          as: 'userId',
+        },
       },
       createdAt: {
         allowNull: false,
@@ -22,6 +27,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('Staffs');
+    return queryInterface.dropTable('Lecturers');
   }
 };
