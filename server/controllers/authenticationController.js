@@ -15,7 +15,7 @@ exports.signinUser = (req, res) => {
       if (!foundUser) {
         res.status(401).send({
           status: 'Error',
-          message: 'username or password is incorrect'
+          message: 'email or password is incorrect'
         });
       } else {
         const passkey = bcrypt.compareSync(password, foundUser.password);
@@ -71,7 +71,7 @@ exports.signinUser = (req, res) => {
         } else {
           res.status(401).send({
             status: 'Error',
-            message: 'username or password is incorrect'
+            message: 'email or password is incorrect'
           });
         }
       }

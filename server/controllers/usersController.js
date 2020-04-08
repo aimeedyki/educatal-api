@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 import { Department, Lecturer, Student, User } from '../models';
-import { getUserToken, userValidator } from '../helpers'
+import { getUserToken, paginate, userValidator } from '../helpers'
 
 exports.createUser = (req, res) => {
   const { isValid, errorMessages } = userValidator(req.body);
@@ -100,4 +100,31 @@ exports.createUser = (req, res) => {
       message: errorMessages
     });
   }
-}
+};
+
+exports.fetchAllUsers = (req, res) => {
+  const offset = req.query.offset || 0;
+  const limit = req.query.limit || 10;
+
+  User.findAndCountAll({
+    order: [['surname', 'ASC']],
+    limit,
+    offset
+  })
+    .then((foundUsers) => {
+      if (foundUsers.rows.length < 1) {
+        return res.status(200)
+          .send({
+            status: 'Success',
+            message: 'Sorry, there are no users'
+          });
+      }
+
+      res.status(200).send({
+        status: 'Success',
+        users: foundUsers.rows,
+        pagination: paginate(offset, limit, foundUsers)
+      });
+    })
+    .catch(error => res.status(500).send(error.message));
+};
