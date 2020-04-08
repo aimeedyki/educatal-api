@@ -7,7 +7,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4
     },
-    registrationNumber: DataTypes.STRING,
+    registrationNumber: {
+      type: DataTypes.STRING,
+      unique: {
+        args: true,
+        msg: 'Registration number already exists, please confirm again',
+      },
+    },
     studentType: DataTypes.ENUM('M.Sc.', 'Ph.D.'),
     entryYear: DataTypes.STRING,
     userId: DataTypes.UUID,

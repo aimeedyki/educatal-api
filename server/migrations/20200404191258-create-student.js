@@ -9,7 +9,8 @@ module.exports = {
         defaultValue: Sequelize.UUIDV4
       },
       registrationNumber: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        unique: true,
       },
       studentType: {
         type: Sequelize.ENUM('M.Sc.', 'Ph.D.')
