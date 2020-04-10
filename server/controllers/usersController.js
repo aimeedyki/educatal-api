@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { Op } from 'sequelize';
 
 import { Department, Lecturer, Student, User } from '../models';
 import { getUserToken, paginate, userValidator } from '../helpers'
@@ -103,10 +104,30 @@ exports.createUser = (req, res) => {
 };
 
 exports.fetchAllUsers = (req, res) => {
-  const offset = req.query.offset || 0;
-  const limit = req.query.limit || 10;
+  const {
+    limit = 8,
+    offset = 0,
+    role,
+    nameQuery
+  } = req.query;
 
+  const whereClause = {};
+
+  if (role) {
+    whereClause.role = role;
+  }
+
+  if (nameQuery) {
+    whereClause[Op.or] = [
+      { firstName: { [Op.like]: `%${nameQuery}%` } },
+      { middleName: { [Op.like]: `%${nameQuery}%` } },
+      { surname: { [Op.like]: `%${nameQuery}%` } }
+    ];
+  }
+
+  console.log('whereclause', whereClause)
   User.findAndCountAll({
+    where: whereClause,
     order: [['surname', 'ASC']],
     limit,
     offset
