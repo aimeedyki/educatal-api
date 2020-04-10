@@ -125,7 +125,6 @@ exports.fetchAllUsers = (req, res) => {
     ];
   }
 
-  console.log('whereclause', whereClause)
   User.findAndCountAll({
     where: whereClause,
     order: [['surname', 'ASC']],
@@ -146,6 +145,61 @@ exports.fetchAllUsers = (req, res) => {
         users: foundUsers.rows,
         pagination: paginate(offset, limit, foundUsers)
       });
+    })
+    .catch(error => res.status(500).send(error.message));
+};
+
+exports.fetchUser = (req, res) => {
+  const { userId } = req.params;
+
+  User.findByPk(userId)
+    .then((foundUser) => {
+      if (!foundUser) {
+        return res.status(404)
+          .send({
+            status: 'Error',
+            message: 'User not found'
+          });
+      }
+
+      switch (foundUser.role) {
+        case 'STUDENT': {
+          Student.findOne({
+            where: { userId }
+          }).then((foundStudent) => {
+            res.status(200).send({
+              status: 'Succes',
+              user: foundUser,
+              studentDetails: foundStudent
+            });
+          }).catch((error) => {
+            res.status(500).send(error.message);
+          });
+          break;
+        }
+
+        case 'LECTURER': {
+          Lecturer.findOne({
+            where: { userId }
+          }).then((foundLecturer) => {
+            res.status(201).send({
+              status: 'Succes',
+              user: foundUser,
+              lecturerDetails: foundLecturer
+            });
+          }).catch((error) => {
+            res.status(500).send(error.message);
+          });
+          break;
+        }
+
+        default:
+          res.status(201).send({
+            status: 'Succes',
+            user: foundUser
+          });
+          break;
+      }
     })
     .catch(error => res.status(500).send(error.message));
 };

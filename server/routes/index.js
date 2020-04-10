@@ -27,4 +27,11 @@ app.get(
   usersController.fetchAllUsers
 );
 
+app.get(
+  '/user/:userId',
+  authentication.verifyUser,
+  authentication.verifyAdmin,
+  usersController.fetchUser
+)
+
 export default app;
