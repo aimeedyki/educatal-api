@@ -19,4 +19,19 @@ app.post(
 // route for signing in user
 app.post('/signin', authenticationController.signinUser);
 
+// route for fetching all users
+app.get(
+  '/user',
+  authentication.verifyUser,
+  authentication.verifyAdmin,
+  usersController.fetchAllUsers
+);
+
+app.get(
+  '/user/:userId',
+  authentication.verifyUser,
+  authentication.verifyAdmin,
+  usersController.fetchUser
+)
+
 export default app;

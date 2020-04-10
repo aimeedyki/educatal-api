@@ -25,7 +25,6 @@ const authentication = {
   },
 
   verifyAdmin: (req, res, next) => {
-    console.log('hello', req.decoded.role)
     if (req.decoded && req.decoded.role === 'ADMIN') return next();
 
     return res.status(401).send({

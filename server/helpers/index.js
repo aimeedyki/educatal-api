@@ -1,9 +1,11 @@
 import getUserToken from './getUserToken';
-import userValidator from './userValidator';
+import paginate from './paginate';
 import signinValidator from './signinValidator';
+import userValidator from './userValidator';
 
 export {
   getUserToken,
+  paginate,
   signinValidator,
   userValidator
 };
