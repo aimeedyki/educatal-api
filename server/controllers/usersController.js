@@ -7,7 +7,8 @@ import {
   paginate,
   userUpdateValidator,
   userValidator
-} from '../helpers'
+} from '../helpers';
+import { roles } from '../constants';
 
 exports.createUser = (req, res) => {
   const { isValid, errorMessages } = userValidator(req.body);
@@ -45,7 +46,7 @@ exports.createUser = (req, res) => {
         const token = getUserToken(createdUser);
 
         switch (role) {
-          case 'STUDENT': {
+          case roles.STUDENT: {
             const {
               registrationNumber,
               studentType,
@@ -70,7 +71,7 @@ exports.createUser = (req, res) => {
             break;
           }
 
-          case 'LECTURER': {
+          case roles.LECTURER: {
             Lecturer.create({
               userId: createdUser.id
             }).then((createdLecturer) => {
@@ -168,7 +169,7 @@ exports.fetchUser = (req, res) => {
       }
 
       switch (foundUser.role) {
-        case 'STUDENT': {
+        case roles.STUDENT: {
           Student.findOne({
             where: { userId }
           }).then((foundStudent) => {
@@ -183,7 +184,7 @@ exports.fetchUser = (req, res) => {
           break;
         }
 
-        case 'LECTURER': {
+        case roles.LECTURER: {
           Lecturer.findOne({
             where: { userId }
           }).then((foundLecturer) => {
@@ -237,14 +238,14 @@ exports.updateUser = (req, res) => {
 
         if (role !== user.role) {
           switch (role) {
-            case 'STUDENT': {
+            case roles.STUDENT: {
               const {
                 registrationNumber,
                 studentType,
                 entryYear
               } = req.body;
 
-              if (user.role === 'LECTURER') {
+              if (user.role === roles.LECTURER) {
                 Lecturer.findOne({
                   where: { userId }
                 }).then((foundLecturer) => {
@@ -272,8 +273,8 @@ exports.updateUser = (req, res) => {
               break;
             }
 
-            case 'LECTURER': {
-              if (user.role === 'STUDENT') {
+            case roles.LECTURER: {
+              if (user.role === roles.STUDENT) {
                 Student.findOne({
                   where: { userId }
                 }).then((foundStudent) => {

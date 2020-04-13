@@ -1,6 +1,7 @@
 import validator from 'validator';
 
 import validationFormatter from './validationFormatter';
+import { roles, studentTypes } from '../constants';
 
 export default (formDetails) => {
   if (Object.keys(formDetails).length === 0) {
@@ -15,7 +16,6 @@ export default (formDetails) => {
     surname
   } = formDetails;
   const errorMessages = {};
-  const roles = ['ADMIN', 'LECTURER', 'STUDENT'];
 
   if (!email || !validator.isEmail(email)) {
     errorMessages.email = 'Please provide a valid email';
@@ -33,7 +33,7 @@ export default (formDetails) => {
     errorMessages.surname = 'Surname cannot be empty';
   }
 
-  if (!role || roles.indexOf(role) === -1) {
+  if (!role || Object.values(roles).indexOf(role) === -1) {
     errorMessages.role = 'Please enter a valid role';
   }
 
@@ -44,13 +44,12 @@ export default (formDetails) => {
         studentType,
         entryYear
       } = formDetails;
-      const studentTypes = ['M.Sc.', 'Ph.D.'];
 
       if (!registrationNumber || validator.isEmpty(surname)) {
         errorMessages.registrationNumber = 'Registration number cannot be empty';
       }
 
-      if (!studentType || studentTypes.indexOf(studentType)) {
+      if (!studentType || Object.values(studentTypes).indexOf(studentType)) {
         errorMessages.studentType = 'Please enter a valid student type';
       }
 
