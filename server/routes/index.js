@@ -27,11 +27,20 @@ app.get(
   usersController.fetchAllUsers
 );
 
+// route for fetching a user
 app.get(
   '/user/:userId',
   authentication.verifyUser,
   authentication.verifyAdmin,
   usersController.fetchUser
 )
+
+// route to edit user details
+app.put(
+  '/user/:userId',
+  authentication.verifyUser,
+  authentication.verifyAdmin,
+  usersController.updateUser
+);
 
 export default app;
