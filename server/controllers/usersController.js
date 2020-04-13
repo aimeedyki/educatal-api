@@ -23,6 +23,7 @@ exports.createUser = (req, res) => {
       surname,
       title,
     } = req.body;
+    const { userId: creatorsId } = req.decoded;
 
     User.findOne({
       where: { email }
@@ -37,6 +38,7 @@ exports.createUser = (req, res) => {
       User.create({
         email,
         firstName,
+        lastUpdatedBy: creatorsId,
         middleName,
         password,
         role,
@@ -222,6 +224,7 @@ exports.updateUser = (req, res) => {
     surname,
     title,
   } = req.body;
+  const { userId: updatersID } = req.decoded;
   let studentDetails;
   let lecturerDetails;
 
@@ -305,6 +308,7 @@ exports.updateUser = (req, res) => {
           title: title || user.title,
           email: email || user.email,
           firstName: firstName || user.firstName,
+          lastUpdatedBy: updatersID,
           middleName: middleName || user.middleName,
           password: password || user.password,
           role: role || user.role,

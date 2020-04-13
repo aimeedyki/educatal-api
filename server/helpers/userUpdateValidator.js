@@ -4,10 +4,6 @@ import validationFormatter from './validationFormatter';
 import { roles, studentTypes } from '../constants';
 
 export default (formDetails) => {
-  if (Object.keys(formDetails).length === 0) {
-    return { errorMessages: { error: 'Please provide data' } };
-  }
-
   const {
     email,
     entryYear,
