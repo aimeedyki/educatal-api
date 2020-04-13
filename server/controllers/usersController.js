@@ -2,7 +2,13 @@ import jwt from 'jsonwebtoken';
 import { Op } from 'sequelize';
 
 import { Department, Lecturer, Student, User } from '../models';
-import { getUserToken, paginate, userValidator } from '../helpers'
+import {
+  getUserToken,
+  paginate,
+  userUpdateValidator,
+  userValidator
+} from '../helpers';
+import { roles } from '../constants';
 
 exports.createUser = (req, res) => {
   const { isValid, errorMessages } = userValidator(req.body);
@@ -17,6 +23,7 @@ exports.createUser = (req, res) => {
       surname,
       title,
     } = req.body;
+    const { userId: creatorsId } = req.decoded;
 
     User.findOne({
       where: { email }
@@ -31,6 +38,7 @@ exports.createUser = (req, res) => {
       User.create({
         email,
         firstName,
+        lastUpdatedBy: creatorsId,
         middleName,
         password,
         role,
@@ -40,7 +48,7 @@ exports.createUser = (req, res) => {
         const token = getUserToken(createdUser);
 
         switch (role) {
-          case 'STUDENT': {
+          case roles.STUDENT: {
             const {
               registrationNumber,
               studentType,
@@ -65,7 +73,7 @@ exports.createUser = (req, res) => {
             break;
           }
 
-          case 'LECTURER': {
+          case roles.LECTURER: {
             Lecturer.create({
               userId: createdUser.id
             }).then((createdLecturer) => {
@@ -163,7 +171,7 @@ exports.fetchUser = (req, res) => {
       }
 
       switch (foundUser.role) {
-        case 'STUDENT': {
+        case roles.STUDENT: {
           Student.findOne({
             where: { userId }
           }).then((foundStudent) => {
@@ -178,7 +186,7 @@ exports.fetchUser = (req, res) => {
           break;
         }
 
-        case 'LECTURER': {
+        case roles.LECTURER: {
           Lecturer.findOne({
             where: { userId }
           }).then((foundLecturer) => {
@@ -202,4 +210,136 @@ exports.fetchUser = (req, res) => {
       }
     })
     .catch(error => res.status(500).send(error.message));
+};
+
+exports.updateUser = (req, res) => {
+  const { isValid, errorMessages } = userUpdateValidator(req.body);
+  const { userId } = req.params;
+  const {
+    email,
+    firstName,
+    middleName,
+    password,
+    role,
+    surname,
+    title,
+  } = req.body;
+  const { userId: updatersID } = req.decoded;
+  let studentDetails;
+  let lecturerDetails;
+
+  if (isValid) {
+    User.findByPk(userId)
+      .then((user) => {
+        if (!user) {
+          return res.status(404)
+            .send({
+              status: 'Error',
+              message: 'User not found'
+            });
+        }
+
+        if (role !== user.role) {
+          switch (role) {
+            case roles.STUDENT: {
+              const {
+                registrationNumber,
+                studentType,
+                entryYear
+              } = req.body;
+
+              if (user.role === roles.LECTURER) {
+                Lecturer.findOne({
+                  where: { userId }
+                }).then((foundLecturer) => {
+                  foundLecturer
+                    .destroy()
+                    .then()
+                    .catch(error => res.status(500).send(error));
+                })
+              }
+
+              Student.create({
+                registrationNumber,
+                studentType,
+                entryYear,
+                userId: user.id
+              }).then((createdStudent) => {
+                studentDetails = createdStudent;
+              }).catch((error) => {
+                res.status(500).send({
+                  status: 'Error',
+                  message: error.message
+                });
+              });
+
+              break;
+            }
+
+            case roles.LECTURER: {
+              if (user.role === roles.STUDENT) {
+                Student.findOne({
+                  where: { userId }
+                }).then((foundStudent) => {
+                  foundStudent
+                    .destroy()
+                    .then()
+                    .catch(error => res.status(500).send(error));
+                })
+              }
+
+              Lecturer.create({
+                userId: user.id
+              }).then((createdLecturer) => {
+                lecturerDetails = createdLecturer;
+              }).catch((error) => {
+                res.status(500).send(error.message);
+              });
+
+              break;
+            }
+
+            default:
+              break;
+          }
+        }
+
+        user.update({
+          title: title || user.title,
+          email: email || user.email,
+          firstName: firstName || user.firstName,
+          lastUpdatedBy: updatersID,
+          middleName: middleName || user.middleName,
+          password: password || user.password,
+          role: role || user.role,
+          surname: surname || user.surname
+        })
+          .then((updateduser) => {
+            let response;
+
+            if (studentDetails) {
+              response = { status: 'Success', updateduser, studentDetails }
+            } else if (lecturerDetails) {
+              response = { status: 'Success', updateduser, lecturerDetails }
+            } else {
+              response = { status: 'Success', updateduser }
+            }
+
+            res.status(200).send(response);
+          })
+          .catch(error => res.status(500).send({
+            status: 'Error',
+            message: error.message
+          }));
+      })
+      .catch(error => res.status(500).send({
+        status: 'Error',
+        message: error.message
+      }));
+  } else {
+    res.status(400).send({
+      status: 'Error',
+      message: errorMessages
+    });
+  }
 };
