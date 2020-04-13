@@ -35,6 +35,13 @@ app.get(
   usersController.fetchUser
 )
 
+// route to update user's password
+app.put(
+  '/user/password',
+  authentication.verifyUser,
+  authenticationController.changePassword
+);
+
 // route to edit user details
 app.put(
   '/user/:userId',

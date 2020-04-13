@@ -2,7 +2,11 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 import { Lecturer, Student, User } from '../models';
-import { getUserToken, signinValidator } from '../helpers';
+import {
+  changePasswordValidator,
+  getUserToken,
+  signinValidator
+} from '../helpers';
 
 exports.signinUser = (req, res) => {
   const { isValid, errorMessages } = signinValidator(req.body);
@@ -84,4 +88,56 @@ exports.signinUser = (req, res) => {
       message: errorMessages
     });
   }
-}
+};
+
+exports.changePassword = (req, res) => {
+  const { isValid, errorMessages } = changePasswordValidator(req.body);
+
+  if (isValid) {
+    const { newPassword, oldPassword } = req.body;
+    const { userId } = req.decoded;
+
+    User.findByPk(userId)
+      .then((user) => {
+        // checks if oldpassword matches old password
+        if (!bcrypt.compareSync(oldPassword, user.password)) {
+          return res.status(422).send({
+            status: 'Error',
+            message: 'Please reconfirm password'
+          });
+        }
+
+        // checks if new password is the same with received to stored password
+        if (bcrypt.compareSync(newPassword, user.password)) {
+          return res.status(409).send({
+            status: 'Error',
+            message: 'You cannot use a previous password'
+          });
+        }
+
+        user.update({
+          password: bcrypt.hashSync(newPassword, 10)
+        })
+          .then((updatedUser) => {
+            res.status(200)
+              .send({
+                status: 'Success',
+                message: `Password for ${updatedUser.firstName}, has been updated`
+              });
+          })
+          .catch(error => res.status(500).send({
+            status: 'Error',
+            message: error.message
+          }));
+      })
+      .catch(error => res.status(500).send({
+        status: 'Error',
+        message: error.message
+      }));
+  } else {
+    res.status(400).send({
+      status: 'Error',
+      message: errorMessages
+    });
+  }
+};
