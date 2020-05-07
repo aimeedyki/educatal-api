@@ -26,6 +26,26 @@ exports.signinUser = (req, res) => {
 
         if (passkey) {
           const token = getUserToken(foundUser);
+          const {
+            departmentId,
+            email,
+            id,
+            firstName,
+            middleName,
+            role,
+            surname,
+            title
+          } = foundUser;
+          const userData = {
+            id,
+            title,
+            firstName,
+            middleName,
+            surname,
+            email,
+            role,
+            departmentId,
+          };
 
           // return user details according to users role
           switch (foundUser.role) {
@@ -33,11 +53,25 @@ exports.signinUser = (req, res) => {
               Student.findOne({
                 where: { userId: foundUser.id }
               }).then((foundStudent) => {
+                const {
+                  id: studentId,
+                  registrationNumber,
+                  studentType,
+                  entryYear
+                } = foundStudent;
+
                 res.status(201).send({
                   status: 'Succes',
-                  user: foundUser,
-                  studentDetails: foundStudent,
-                  token
+                  data: {
+                    user: {
+                      ...userData,
+                      studentType,
+                      registrationNumber,
+                      entryYear,
+                      studentId
+                    },
+                    token
+                  }
                 });
               }).catch((error) => {
                 res.status(500).send(error.message);
@@ -50,11 +84,14 @@ exports.signinUser = (req, res) => {
               Lecturer.findOne({
                 where: { userId: foundUser.id }
               }).then((foundLecturer) => {
+                const { id: lecturerID } = foundLecturer;
+
                 res.status(201).send({
                   status: 'Succes',
-                  user: foundUser,
-                  lecturerDetails: foundLecturer,
-                  token
+                  data: {
+                    user: {...userData, lecturerID},
+                    token
+                  }
                 });
               }).catch((error) => {
                 res.status(500).send(error.message);
@@ -66,8 +103,10 @@ exports.signinUser = (req, res) => {
             default:
               res.status(201).send({
                 status: 'Succes',
-                user: foundUser,
-                token
+                data: {
+                  user: userData,
+                  token
+                }
               });
 
               break;
