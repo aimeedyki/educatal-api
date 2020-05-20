@@ -89,7 +89,7 @@ exports.signinUser = (req, res) => {
                 res.status(201).send({
                   status: 'Succes',
                   data: {
-                    user: {...userData, lecturerID},
+                    user: { ...userData, lecturerID },
                     token
                   }
                 });
@@ -133,13 +133,13 @@ exports.changePassword = (req, res) => {
   const { isValid, errorMessages } = changePasswordValidator(req.body);
 
   if (isValid) {
-    const { newPassword, oldPassword } = req.body;
+    const { newPassword, currentPassword } = req.body;
     const { userId } = req.decoded;
 
     User.findByPk(userId)
       .then((user) => {
-        // checks if oldpassword matches old password
-        if (!bcrypt.compareSync(oldPassword, user.password)) {
+        // checks if currentPassword matches user password
+        if (!bcrypt.compareSync(currentPassword, user.password)) {
           return res.status(422).send({
             status: 'Error',
             message: 'Please reconfirm password'
@@ -161,7 +161,9 @@ exports.changePassword = (req, res) => {
             res.status(200)
               .send({
                 status: 'Success',
-                message: `Password for ${updatedUser.firstName}, has been updated`
+                data: {
+                  message: `Password for ${updatedUser.firstName}, has been updated`
+                }
               });
           })
           .catch(error => res.status(500).send({

@@ -17,7 +17,7 @@ app.post(
 );
 
 // route for signing in user
-app.post('/signin', authenticationController.signinUser);
+app.put('/signin', authenticationController.signinUser);
 
 // route for fetching all users
 app.get(
@@ -36,7 +36,7 @@ app.get(
 )
 
 // route to update user's password
-app.put(
+app.patch(
   '/user/password',
   authentication.verifyUser,
   authenticationController.changePassword
